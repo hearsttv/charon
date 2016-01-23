@@ -15,6 +15,7 @@ type middleware struct {
 	isAuthed           func(r *http.Request) bool
 	hasRole            func(r *http.Request, roles ...string) bool
 	failAuthRequired   func(rw http.ResponseWriter, r *http.Request)
+	failNotAuthorized  func(rw http.ResponseWriter, r *http.Request)
 	failAuthProhibited func(rw http.ResponseWriter, r *http.Request)
 }
 
@@ -27,11 +28,12 @@ func New(isAuthed func(r *http.Request) bool, failAuthRequired func(rw http.Resp
 	}
 }
 
-func NewWithRoleSupport(isAuthed func(r *http.Request) bool, hasRole func(r *http.Request, roles ...string) bool, failAuthRequired func(rw http.ResponseWriter, r *http.Request), failAuthProhibited func(rw http.ResponseWriter, r *http.Request)) Charon {
+func NewWithRoleSupport(isAuthed func(r *http.Request) bool, hasRole func(r *http.Request, roles ...string) bool, failAuthRequired func(rw http.ResponseWriter, r *http.Request), failNotAuthorized func(rw http.ResponseWriter, r *http.Request), failAuthProhibited func(rw http.ResponseWriter, r *http.Request)) Charon {
 	return &middleware{
 		isAuthed:           isAuthed,
 		hasRole:            hasRole,
 		failAuthRequired:   failAuthRequired,
+		failNotAuthorized:  failNotAuthorized,
 		failAuthProhibited: failAuthProhibited,
 	}
 }
@@ -60,10 +62,12 @@ func (m *middleware) Unauthenticated(handler func(http.ResponseWriter, *http.Req
 
 func (m *middleware) HasRole(handler func(http.ResponseWriter, *http.Request), roles ...string) func(http.ResponseWriter, *http.Request) {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		if m.isAuthed(r) && m.hasRole(r, roles...) {
-			handler(rw, r)
-		} else {
+		if !m.isAuthed(r) {
 			m.failAuthRequired(rw, r)
+		} else if !m.hasRole(r, roles...) {
+			m.failNotAuthorized(rw, r)
+		} else {
+			handler(rw, r)
 		}
 	}
 }
