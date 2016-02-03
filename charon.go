@@ -1,6 +1,7 @@
 package charon
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -18,6 +19,7 @@ type middleware struct {
 
 // New creates a new Charon object with the specified callback functions
 func New(isAuthed func(r *http.Request) bool, failAuthRequired func(rw http.ResponseWriter, r *http.Request), failAuthProhibited func(rw http.ResponseWriter, r *http.Request)) Charon {
+	fmt.Printf("charon: %v, %v, %v\n", isAuthed, failAuthRequired, failAuthProhibited)
 	return &middleware{
 		isAuthed:           isAuthed,
 		failAuthRequired:   failAuthRequired,
