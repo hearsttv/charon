@@ -7,6 +7,6 @@ In our world, Charon is a simple mechanism for marking `net/http` hander funcs a
 
 ## Installation 
 
-`go get github.com/Hearst-DD/charon`
+`go get github.com/hearsttv/charon`
 
-`import "github.com/Hearst-DD/charon"`
+`import "github.com/hearsttv/charon"`
